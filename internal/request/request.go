@@ -185,24 +185,18 @@ func (r *Request) parseSingle(data []byte) (int, error) {
 		return consumed, nil
 
 	case requestStateParsingBody:
-		if r.bodyBytes == 0 {
-			r.State = requestStateDone
-			return 0, nil
-		}
-		toConsume := len(data)
-		if toConsume > r.bodyBytes {
-			toConsume = r.bodyBytes
-		}
-		if toConsume == 0 {
+		if len(data) == 0 {
 			return 0, nil
 		}
 
-		r.Body = append(r.Body, data[:toConsume]...)
-		r.bodyBytes -= toConsume
-		if r.bodyBytes == 0 {
+		r.Body = append(r.Body, data...)
+		if len(r.Body) > r.bodyBytes {
+			return len(data), fmt.Errorf("body longer than content-length")
+		}
+		if len(r.Body) == r.bodyBytes {
 			r.State = requestStateDone
 		}
-		return toConsume, nil
+		return len(data), nil
 
 	case requestStateDone:
 		return 0, fmt.Errorf("error: trying to read data in a done state")
