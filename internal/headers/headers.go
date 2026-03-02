@@ -7,6 +7,9 @@ import (
 
 type Headers map[string]string
 
+func (h Headers) Get(key string) string {
+	return h[strings.ToLower(key)]
+}
 func NewHeaders() Headers {
 	return make(Headers)
 }
